@@ -2,7 +2,6 @@
 require 'capybara'
 require 'capybara/dsl'
 require 'capybara/webkit'
-require 'pry'
 
 Capybara.run_server = false
 Capybara.default_driver = :webkit
