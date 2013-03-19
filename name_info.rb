@@ -1,30 +1,40 @@
-#require 'rubygems'
 require 'capybara'
 require 'capybara/dsl'
 require 'capybara/webkit'
+require 'json'
 
-Capybara.run_server = false
-Capybara.default_driver = :webkit
-Capybara.javascript_driver = :webkit
-Capybara.app_host = 'http://www.usdf.org'
-Capybara.default_wait_time = 10
-    def getit(user_num,password,name)
-        include Capybara::DSL
+class Scores
+    include Capybara::DSL
+    def initialize(user_num,password,query)
+        @user_num=user_num
+        @password=password
+        @query =query
+        @info = {}
+        @info["scores"] = []
+        Capybara.run_server = false
+        Capybara.default_driver = :webkit
+        Capybara.javascript_driver = :webkit
+        Capybara.app_host = 'http://www.usdf.org'
+        Capybara.default_wait_time = 10
+    end
+    def get_em
         visit("/usdfscores/login.asp")
-        fill_in 'UserNum', :with => user_num
-        fill_in 'password', :with => password
+        fill_in 'UserNum', :with => @user_num
+        fill_in 'password', :with => @password
         click_button('Submit')
-        fill_in "q", :with => name
+        fill_in "q", :with => @query
         sleep(5)
         not_found=page.find('.autocomplete').nil? #this is supposed to cause capybara to wait for ajax response, but alias, it does not seem to, hence, the sleep()
         if not_found
-            puts "#{name} not found"
-            return
+            @info["scores"] <<  "#{@query} not found"
+            return @info
         end
         names = all(:css, "div.autocomplete div")
 
         names.each do |a|
-            puts a.text
+            usdf_number = a.text[/\([0-9]+\)/][/[0-9]+/]
+            @info["name"] = a.text[/.*\(/][0..-2]
+            @info["usdf_number"] = usdf_number
         end
 
         names[0].click
@@ -34,16 +44,30 @@ Capybara.default_wait_time = 10
         click_button("Switch to Lifetime Score Check")
         sleep(5)
         scores=page.all(:xpath,"//html/body/div/div[2]/div/div/div[2]/div[2]/div/div/div/table/tbody/tr")
-        scores[1..-1].each do |rows| 
-        #   puts rows.text
-            rows.all(:css,"td").each do |cells|
-                print "#{cells.text} |"
+        @info["scores"]=Array.new
+        scores[1..-1].each_with_index do |rows,index| 
+            cell = rows.all(:css,"td")
+            @info["scores"][index] = Hash.new
+            @info["scores"][index]["Date"]=cell[0].text
+            @info["scores"][index]["Competition"]=cell[1].text
+            @info["scores"][index]["Class"]=cell[2].text
+            @info["scores"][index]["Level"]=cell[3].text
+            @info["scores"][index]["Test"]=cell[4].text
+            @info["scores"][index]["Owner"]=cell[5].text
+            @info["scores"][index]["Rider"]=cell[6].text
+            @info["scores"][index]["Judges"]=cell[7].text
+            @info["scores"][index]["Special_Designation"]=cell[8].text
+            @info["scores"][index]["Score"]=cell[9].text
+            if cell[10] != nil
+                @info["scores"][index]["Placing"]=cell[10].text
             end
-            puts
         end
+        @info["AAK"] = page.current_url
+        @info
     end
-
-getit(ARGV[0],ARGV[1],ARGV[2])
+end
+#scores = Scores.new(ARGV[0],ARGV[1],ARGV[2])
+#puts scores.get_em.to_json
 
 
 
