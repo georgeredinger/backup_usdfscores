@@ -10,6 +10,8 @@ require 'json'
 # curl 'localhost:4567?user_number=123&password=your_password&query=mary%20jones'
 # curl 'localhost:4567?user_number=123&password=your_password&query=54321'
 #
+set :port, 3000
+set :logging, true
  get '/' do
     user_number=params["user_number"]
     password=params["password"]
