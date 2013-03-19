@@ -34,9 +34,8 @@ Capybara.default_wait_time = 10
         sleep(5)
         click_button("Switch to Lifetime Score Check")
         sleep(5)
-        #scores=page.all(:css,"table.google-visualization-table-table tr")
         scores=page.all(:xpath,"//html/body/div/div[2]/div/div/div[2]/div[2]/div/div/div/table/tbody/tr")
-        scores.each do |rows| 
+        scores[1..-1].each do |rows| 
         #   puts rows.text
             rows.all(:css,"td").each do |cells|
                 print "#{cells.text} |"
