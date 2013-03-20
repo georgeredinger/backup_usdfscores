@@ -45,6 +45,15 @@ class Scores
         sleep(5)
         scores=page.all(:xpath,"//html/body/div/div[2]/div/div/div[2]/div[2]/div/div/div/table/tbody/tr")
         @info["scores"]=Array.new
+        @info["AAK"] = page.current_url
+        if page.current_url =~ /info-rider\.asp/
+            its_a_horse = false
+            @info["type"]="human"
+        else
+            @info["type"]="horse"
+            its_a_horse = true
+        end
+
         scores[1..-1].each_with_index do |rows,index| 
             cell = rows.all(:css,"td")
             @info["scores"][index] = Hash.new
@@ -53,16 +62,22 @@ class Scores
             @info["scores"][index]["Class"]=cell[2].text
             @info["scores"][index]["Level"]=cell[3].text
             @info["scores"][index]["Test"]=cell[4].text
-            @info["scores"][index]["Owner"]=cell[5].text
-            @info["scores"][index]["Rider"]=cell[6].text
-            @info["scores"][index]["Judges"]=cell[7].text
-            @info["scores"][index]["Special_Designation"]=cell[8].text
-            @info["scores"][index]["Score"]=cell[9].text
+            if its_a_horse 
+              @info["scores"][index]["Owner"]=cell[5].text
+              @info["scores"][index]["Rider"]=cell[6].text
+              offset=0
+            else
+              @info["scores"][index]["Horse"]=cell[5].text
+              offset=-1
+            end
+
+            @info["scores"][index]["Judges"]=cell[7+offset].text
+            @info["scores"][index]["Special_Designation"]=cell[8+offset].text
+            @info["scores"][index]["Score"]=cell[9+offset].text
             if cell[10] != nil
                 @info["scores"][index]["Placing"]=cell[10].text
             end
         end
-        @info["AAK"] = page.current_url
         @info
     end
 end
