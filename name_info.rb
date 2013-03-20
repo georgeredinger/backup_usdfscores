@@ -74,8 +74,8 @@ class Scores
             @info["scores"][index]["Judges"]=cell[7+offset].text
             @info["scores"][index]["Special_Designation"]=cell[8+offset].text
             @info["scores"][index]["Score"]=cell[9+offset].text
-            if cell[10] != nil
-                @info["scores"][index]["Placing"]=cell[10].text
+            if cell[10+offset] != nil
+                @info["scores"][index]["Placing"]=cell[10+offset].text
             end
         end
         @info
